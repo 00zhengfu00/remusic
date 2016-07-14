@@ -8,6 +8,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.wm.remusic.MainApplication;
 import com.wm.remusic.R;
+import com.wm.remusic.info.MusicInfo;
 import com.wm.remusic.info.Playlist;
 import com.wm.remusic.provider.PlaylistInfo;
 import com.wm.remusic.provider.PlaylistsManager;
@@ -46,7 +49,7 @@ public class AddPlaylistDialog extends DialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         //设置无标题
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -82,15 +85,29 @@ public class AddPlaylistDialog extends DialogFragment {
                     @Override
                     public void onClick(View v) {
                         dismiss();
-                        String albumart = MusicUtils.getMusicInfo(getContext(), musicId[0]).albumData;
-                        playlistInfo.addPlaylist(editText.getText().hashCode(), editText.getText().toString(), musicId.length, albumart);
-                        for (int i = 0; i < musicId.length; i++) {
-                            playlistsManager.Insert(getContext(), editText.getText().hashCode(), musicId[i], i);
-                        }
-                        Intent intent = new Intent(IConstants.PLAYLIST_COUNT_CHANGED);
-                        getActivity().sendBroadcast(intent);
-                        alertDialog.dismiss();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                String albumart = null;
 
+                                for(long id : musicId){
+                                    albumart = MusicUtils.getalbumdata(MainApplication.context,id);
+                                    if(albumart != null){
+                                        break;
+                                    }
+                                }
+                                //String albumart = MusicUtils.getMusicInfo(getContext(), musicId[0]).albumData;
+                                playlistInfo.addPlaylist(editText.getText().hashCode(), editText.getText().toString(), musicId.length, "file://" + albumart);
+                                for (int i = 0; i < musicId.length; i++) {
+                                    playlistsManager.Insert(MainApplication.context, editText.getText().hashCode(), musicId[i], i);
+                                }
+                                Intent intent = new Intent(IConstants.PLAYLIST_COUNT_CHANGED);
+                                MainApplication.context.sendBroadcast(intent);
+
+                        }
+                        }).start();
+
+                        alertDialog.dismiss();
                     }
                 });
             }

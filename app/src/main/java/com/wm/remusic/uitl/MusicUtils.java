@@ -232,6 +232,10 @@ public class MusicUtils implements IConstants {
         Cursor cursor = (context.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, proj_music,
                 selection.toString(),
                 null, null));
+        if(cursor == null){
+            return null;
+        }
+
         ArrayList<MusicInfo> musicList = new ArrayList<>();
         musicList.ensureCapacity(id.length);
         for (int i = 0; i < id.length; i++) {
@@ -367,7 +371,6 @@ public class MusicUtils implements IConstants {
         Cursor cursor = cr.query(Media.EXTERNAL_CONTENT_URI, proj_music, "_id =" + String.valueOf(musicId), null, null);
         long id = -3;
         if (cursor == null) {
-            cursor.close();
             return null;
         }
         if (cursor.moveToFirst()) {
@@ -381,8 +384,7 @@ public class MusicUtils implements IConstants {
     public static String getalbumdata(Context context, long musicid) {
         ContentResolver cr = context.getContentResolver();
         Cursor cursor = cr.query(Media.EXTERNAL_CONTENT_URI, proj_music, "_id = " + String.valueOf(musicid), null, null);
-        if (cursor == null) {
-            cursor.close();
+        if (cursor == null) {;
             return null;
         }
         long albumId = -1;
@@ -394,10 +396,9 @@ public class MusicUtils implements IConstants {
             cursor = cr.query(Albums.EXTERNAL_CONTENT_URI, proj_album, Albums._ID + " = " + String.valueOf(albumId), null, null);
         }
         if (cursor == null) {
-            cursor.close();
             return null;
         }
-        String data = "";
+        String data = null;
         if (cursor.moveToNext()) {
             data = cursor.getString(cursor.getColumnIndex(Albums.ALBUM_ART));
         }
@@ -411,7 +412,6 @@ public class MusicUtils implements IConstants {
         ContentResolver cr = context.getContentResolver();
         Cursor cursor = cr.query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI, proj_artist, "_id =" + String.valueOf(id), null, null);
         if (cursor == null) {
-            cursor.close();
             return null;
         }
         ArtistInfo artistInfo = new ArtistInfo();
@@ -428,7 +428,6 @@ public class MusicUtils implements IConstants {
         ContentResolver cr = context.getContentResolver();
         Cursor cursor = cr.query(Albums.EXTERNAL_CONTENT_URI, proj_album, "_id =" + String.valueOf(albumId), null, null);
         if (cursor == null) {
-            cursor.close();
             return null;
         }
         AlbumInfo albumInfo = new AlbumInfo();
@@ -446,7 +445,6 @@ public class MusicUtils implements IConstants {
         ContentResolver cr = context.getContentResolver();
         Cursor cursor = cr.query(Media.EXTERNAL_CONTENT_URI, proj_music, "_id = " + String.valueOf(id), null, null);
         if (cursor == null) {
-            cursor.close();
             return null;
         }
         MusicInfo music = new MusicInfo();
@@ -480,7 +478,7 @@ public class MusicUtils implements IConstants {
     }
 
 
-    public static final String makeShortTimeString(final Context context, long secs) {
+    public static String makeShortTimeString(final Context context, long secs) {
         long hours, mins;
 
         hours = secs / 3600;
